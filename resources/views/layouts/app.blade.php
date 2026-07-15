@@ -89,17 +89,37 @@
 
                     <div class="relative group">
                         <button class="text-2xl hover:text-primary">
-                            <i class="fa-regular fa-user"></i>
-                            <!-- <span class="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-bold uppercase text-lg shadow-sm">
-                            <i class="fa-regular fa-user"></i>
-                        </span> -->
+                            @auth
+                                <span
+                                    class="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-bold uppercase text-lg shadow-sm">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </span>
+                            @else
+                                <span
+                                    class="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-bold uppercase text-lg shadow-sm">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                            @endauth
                         </button>
                         <ul
                             class="absolute right-0 mt-2 w-40 bg-white border shadow-lg py-2 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                            <li><a href='login.php' class="block px-4 py-2 hover:bg-gray-100 text-sm">Sign In</a></li>
-                            <li><a href='My-Account.php' class="block px-4 py-2 hover:bg-gray-100 text-sm">My
-                                    Account</a></li>
-                            <li><a href="login.php" class="block px-4 py-2 hover:bg-gray-100 text-sm">Sign Out</a></li>
+                            @guest
+                                <li><a href='{{ route('login') }}' class="block px-4 py-2 hover:bg-gray-100 text-sm">Sign
+                                        In</a></li>
+                                <li><a href='{{ route('register') }}' class="block px-4 py-2 hover:bg-gray-100 text-sm">Sign
+                                        Up</a></li>
+                            @else
+                                <li><a href='{{ Auth::user()->utype == 'ADM' ? route('admin.index') : route('users.index') }}'
+                                        class="block px-4 py-2 hover:bg-gray-100 text-sm">My
+                                        Account</a></li>
+                                <li><a href='{{ route('logout') }}'
+                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                        class="block px-4 py-2 hover:bg-gray-100 text-sm">Sign Out</a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                        @csrf
+                                    </form>
+                                </li>
+                            @endguest
                         </ul>
                     </div>
                 </div>
@@ -142,7 +162,8 @@
                                     class="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700">Checkout</a></li>
                             <li class="border-t border-gray-50 mt-1">
                                 <a href="login.php"
-                                    class="block px-4 py-2 hover:bg-gray-100 text-sm font-bold text-primary">Sign In</a>
+                                    class="block px-4 py-2 hover:bg-gray-100 text-sm font-bold text-primary">Sign
+                                    In</a>
                             </li>
                         </ul>
                     </div>
