@@ -4,19 +4,19 @@
 
     <main class="flex-1 overflow-y-auto p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Add New Brand</h1>
-            <a href="{{ route('admin.brands') }}"
+            <h1 class="text-2xl font-bold text-gray-800">Add New Category</h1>
+            <a href="{{ route('admin.categories') }}"
                 class="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                <i class="fa-solid fa-arrow-left"></i> Back to Brands
+                <i class="fa-solid fa-arrow-left"></i> Back to Categories
             </a>
         </div>
         <div class="max-w-3xl mx-auto">
-            <form action="{{ route('admin.brand.store') }}" method="POST" enctype="multipart/form-data"
+            <form action="{{ route('admin.category.store') }}" method="POST" enctype="multipart/form-data"
                 class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 space-y-6">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
                         <input type="text" id="name" name="name" placeholder="e.g. Samsung"
                             value="{{ old('name') }}"
                             class="w-full border px-4 py-2 rounded-lg outline-none focus:ring-1 focus:ring-primary @error('name') border-red-500 @enderror">
@@ -25,7 +25,7 @@
                         @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Slug</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category Slug</label>
                         <input type="text" id="slug" name="slug" placeholder="samsung"
                             value="{{ old('slug') }}"
                             class="w-full border px-4 py-2 rounded-lg bg-gray-50 outline-none @error('slug') border-red-500 @enderror">
@@ -36,22 +36,22 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Brand Logo *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category Logo *</label>
                     <div class="relative flex items-center justify-center w-full h-40">
 
-                        <label for="brand-image"
+                        <label for="category-image"
                             class="relative flex flex-col items-center justify-center w-full h-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition overflow-hidden">
 
                             <div id="upload-content" class="flex flex-col items-center justify-center pt-5 pb-6 z-10">
                                 <i class="fa-solid fa-image text-3xl text-gray-400 mb-2"></i>
-                                <p class="text-sm text-gray-500">Upload brand logo (PNG/JPG)</p>
+                                <p class="text-sm text-gray-500">Upload Category logo (PNG/JPG)</p>
                             </div>
 
                             <img id="image-preview"
                                 class="hidden absolute inset-0 w-full h-full object-contain p-2 z-20 bg-white"
                                 src="" alt="Logo Preview">
 
-                            <input id="brand-image" name="image" type="file" class="hidden"
+                            <input id="category-image" name="image" type="file" class="hidden"
                                 accept="image/png, image/jpeg, image/jpg, image/webp" />
                             @error('image')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -73,69 +73,93 @@
                         class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
 
                     <label for="status" class="text-sm text-gray-700">
-                        Set as Active Brand
+                        Set as Active Category
                     </label>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t">
-                    <a href="{{ route('admin.brands') }}"
+                    <a href="{{ route('admin.categories') }}"
                         class="px-6 py-2 border rounded-lg hover:bg-gray-50 transition text-sm">Cancel</a>
                     <button type="submit"
                         class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium shadow-sm">Save
-                        Brand</button>
+                        Category</button>
                 </div>
             </form>
         </div>
     </main>
 
     <!-- Main Content End -->
+
     <script>
-        const imageInput = document.getElementById('brand-image');
-        const imagePreview = document.getElementById('image-preview');
-        const uploadContent = document.getElementById('upload-content');
-        const removeBtn = document.getElementById('remove-logo-btn');
+        document.addEventListener('DOMContentLoaded', function() {
 
+            // ==========================================
+            // 1. CATEGORY IMAGE PREVIEW & REMOVE LOGIC
+            // ==========================================
+            const imageInput = document.getElementById('category-image');
+            const uploadContent = document.getElementById('upload-content');
+            const imagePreview = document.getElementById('image-preview');
+            const removeBtn = document.getElementById('remove-image-btn');
 
-        imageInput.addEventListener('change', function(event) {
+            if (imageInput) {
+                // Handle file selection
+                imageInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
 
-            const file = event.target.files[0];
-
-            if (file) {
-
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-
-                    imagePreview.src = e.target.result;
-
-                    imagePreview.classList.remove('hidden');
-                    uploadContent.classList.add('hidden');
-                    removeBtn.classList.remove('hidden');
-
-                }
-
-                reader.readAsDataURL(file);
+                    if (file && file.type.startsWith('image/')) {
+                        // Show preview
+                        imagePreview.src = URL.createObjectURL(file);
+                        uploadContent.classList.add('hidden');
+                        imagePreview.classList.remove('hidden');
+                        removeBtn.classList.remove('hidden');
+                    } else {
+                        // Invalid file or canceled
+                        resetImageState();
+                    }
+                });
             }
 
-        });
+            if (removeBtn) {
+                // Handle remove button click
+                removeBtn.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent accidental form submission
+                    resetImageState();
+                });
+            }
+
+            // Helper function to reset the UI to its default state
+            function resetImageState() {
+                imageInput.value = ''; // Clear the actual file input
+                imagePreview.src = '';
+
+                // Toggle visibility classes back to default
+                uploadContent.classList.remove('hidden');
+                imagePreview.classList.add('hidden');
+                removeBtn.classList.add('hidden');
+            }
 
 
-        // --- Slug Auto-Generation ---
-        const brandNameInput = document.getElementById('name');
-        const brandSlugInput = document.getElementById('slug');
+            // ==========================================
+            // 2. AUTO-SLUG GENERATOR LOGIC
+            // ==========================================
+            const nameInput = document.getElementById('name');
+            const slugInput = document.getElementById('slug');
 
-        brandNameInput.addEventListener('input', function() {
-        const name = this.value;
+            if (nameInput && slugInput) {
+                nameInput.addEventListener('input', function() {
+                    const name = this.value;
 
-        // Generate the slug
-        const slug = name.toLowerCase()
-            .trim() // Remove whitespace from both ends
-            .replace(/[^a-z0-9 -]/g, '') // Remove invalid characters
-            .replace(/\s+/g, '-') // Replace spaces with hyphens
-            .replace(/-+/g, '-'); // Replace multiple hyphens with a single one
+                    // Generate the slug
+                    const slug = name.toLowerCase()
+                        .trim() // Remove whitespace from both ends
+                        .replace(/[^a-z0-9 -]/g, '') // Remove invalid characters
+                        .replace(/\s+/g, '-') // Replace spaces with hyphens
+                        .replace(/-+/g, '-'); // Replace multiple hyphens with a single one
 
-        brandSlugInput.value = slug;
-        });
+                    slugInput.value = slug;
+                });
+            }
+
         });
     </script>
 </x-admin-layout>

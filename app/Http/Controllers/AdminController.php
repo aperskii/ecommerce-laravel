@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Brand;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
+use App\Models\Category;
+
 
 class AdminController extends Controller
 {
+
+    public function index()
+    {
+        return view('admin.index');
+    }
     public function brands()
     {
         $query = Brand::query();
@@ -153,5 +160,93 @@ class AdminController extends Controller
         }
         $brand->delete();
         return redirect()->route('admin.brands')->with('success', 'Brand deleted successfully');
+    }
+
+    public function categories()
+    {
+        $query = Category::query();
+
+        if (request()->filled('search')) {
+            $search = request('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('slug', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        if (request('status') !== null && request('status') !== '') {
+            $query->where('status', request('status'));
+        }
+
+        $categories = $query
+            ->orderBy('id', 'DESC')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.categories', compact('categories'));
+    }
+
+    public function categoryAdd()
+    {
+        return view('admin.category-add');
+    }
+
+    public function categoryStore(Request $request)
+    {
+        $slug = $request->filled('slug')
+            ? Str::slug($request->slug)
+            : Str::slug($request->name);
+
+        $request->merge([
+            'slug' => $slug,
+        ]);
+
+        $request->validate([
+            'name'   => 'required|string|max:255',
+            'slug'   => 'required|string|max:255|unique:categories,slug',
+            'image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'status' => 'nullable|boolean',
+        ]);
+
+
+        $category = new Category();
+
+        $category->name = $request->name;
+        $category->slug = $request->slug;
+        $category->status = $request->boolean('status');
+
+        if ($request->hasFile('image')) {
+
+            $image = $request->file('image');
+
+            $imageName = time() . '_' . uniqid() . '.' . $image->extension();
+
+
+            // Save original image
+            $image->move(
+                public_path('uploads/categories'),
+                $imageName
+            );
+
+
+            // Create thumbnail
+            $this->generateThumbnailImage(
+                public_path('uploads/categories/' . $imageName),
+                $imageName,
+                'uploads/categories',
+                124,
+                124
+            );
+
+
+            $category->image = $imageName;
+        }
+
+        $category->save();
+
+        return redirect()
+            ->route('admin.categories')
+            ->with('success', 'Category added successfully.');
     }
 }
