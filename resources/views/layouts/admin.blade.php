@@ -53,7 +53,7 @@
         <aside id="sidebar"
             class="fixed inset-y-0 left-0 z-50 w-64 bg-sky-800 text-gray-100 transition-transform transform -translate-x-full md:translate-x-0 md:static md:inset-0 flex flex-col">
             <div class="flex items-center justify-center h-16 bg-sky-700 border-b border-gray-800">
-                <a href="{{ route('admin.index') }}"><img src="assets/images/logo.png" alt="Logo"
+                <a href="{{ route('admin.index') }}"><img src="{{ asset('assets/images/logo-w.png') }}" alt="Logo"
                         class="h-12" /></a>
             </div>
 
